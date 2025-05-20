@@ -28,10 +28,28 @@ const run = async () => {
 
     // Collections
     const userCollection = client.db("RRDB").collection("users");
+    const plantCollection = client.db("RRDB").collection("plants");
 
+    // User API
     app.post("/users", async (req, res) => {
       const userProfile = req.body;
       const result = await userCollection.insertOne(userProfile);
+      res.send(result);
+    });
+
+    app.get("/user/:uid", async (req, res) => {
+      const uid = req.params.uid;
+      const query = { uid: uid };
+      const result = await userCollection.findOne(query);
+      console.log(result);
+      res.send(result);
+    });
+
+    // Plant API
+
+    app.post("/plant", async (req, res) => {
+      const plantData = req.body;
+      const result = await plantCollection.insertOne(plantData);
       res.send(result);
     });
   } finally {
