@@ -66,6 +66,39 @@ const run = async () => {
       const result = await plantCollection.findOne(query);
       res.send(result);
     });
+
+    app.get("/plants/:uid", async (req, res) => {
+      const uid = req.params.uid;
+      const query = { uid: uid };
+      const result = await plantCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.put("/plant/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+        const plantUpdate = req.body;
+        const filter = { _id: new ObjectId(id) };
+
+        const updateDoc = {
+          $set: {
+            ...plantUpdate,
+          },
+        };
+
+        const options = { upsert: true }; // Creates document if it doesn't exist (optional)
+
+        const result = await plantCollection.updateOne(
+          filter,
+          updateDoc,
+          options
+        );
+        res.send(result);
+      } catch (error) {
+        console.error("Error updating plant:", error);
+        res.status(500).send({ error: "Failed to update plant" });
+      }
+    });
   } finally {
   }
 };
