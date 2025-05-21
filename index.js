@@ -30,6 +30,7 @@ const run = async () => {
 
     const userCollection = client.db("RRDB").collection("users");
     const plantCollection = client.db("RRDB").collection("plants");
+    const categoryCollection = client.db("RRDB").collection("category");
 
     // User API
     app.post("/users", async (req, res) => {
@@ -43,6 +44,27 @@ const run = async () => {
       const query = { uid: uid };
       const result = await userCollection.findOne(query);
       console.log(result);
+      res.send(result);
+    });
+
+    // Category API
+
+    app.post("/category", async (req, res) => {
+      const category = req.body;
+      console.log(category);
+      result = await categoryCollection.insertOne(category);
+      res.send(result);
+    });
+
+    app.get("/categories", async (req, res) => {
+      const result = await categoryCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.get("/category/:category", async (req, res) => {
+      const category = req.params.category;
+      const query = { category: category };
+      const result = await plantCollection.find(query).toArray();
       res.send(result);
     });
 
