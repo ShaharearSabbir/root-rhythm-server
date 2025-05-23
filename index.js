@@ -80,9 +80,14 @@ const run = async () => {
         .limit(6)
         .toArray();
 
+      const easyPlants = await plantCollection
+        .find({ careLevel: "easy" })
+        .limit(6)
+        .toArray();
       const result = {
         categories: categories,
         latestPlants: latestPlants,
+        easyPlants: easyPlants,
       };
       res.send(result);
     });
