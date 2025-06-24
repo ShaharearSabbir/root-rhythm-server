@@ -63,7 +63,7 @@ Ensure you have:
 1.  **Clone the Repository:**
     Start by cloning the backend repository to your local machine and navigating into its directory:
     ```bash
-    git clone [https://github.com/ShaharearSabbir/root-rhythm-server](https://github.com/ShaharearSabbir/root-rhythm-server)
+    git clone https://github.com/ShaharearSabbir/root-rhythm-server
     cd root-rhythm-server
     ```
 
