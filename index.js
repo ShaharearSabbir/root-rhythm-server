@@ -124,15 +124,20 @@ const run = async () => {
     });
 
     app.get("/plants", async (req, res) => {
+      const filterBy = req.query.filterBy;
       const sortBy = req.query.sortBy;
       const order = req.query.order === "descending" ? -1 : 1;
       const page = parseInt(req.query.page);
       const plantsPerPage = parseInt(req.query.plantsPerPage);
       const skip = page * plantsPerPage;
+      const query = {};
+      if (filterBy) {
+        query.category = filterBy;
+      }
       const sortOption = {};
       sortOption[sortBy] = order;
       const result = await plantCollection
-        .find()
+        .find(query)
         .skip(skip)
         .limit(plantsPerPage)
         .sort(sortOption)
