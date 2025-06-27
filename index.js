@@ -10,20 +10,6 @@ app.use(express.json());
 
 const allowedOrigins = ["http://localhost:5173", "https://root-rhythm.web.app"];
 
-// const corsOptions = {
-//   origin: function (origin, callback) {
-//     if (!origin || allowedOrigins.includes(origin)) {
-//       callback(null, true);
-//     } else {
-//       callback(new Error("Not allowed by CORS"));
-//     }
-//   },
-
-//   allowedHeaders: ["Content-Type", "Authorization"],
-
-//   optionsSuccessStatus: 204,
-// };
-
 app.use(
   cors({
     origin: allowedOrigins,
@@ -44,9 +30,9 @@ const client = new MongoClient(uri, {
 
 const run = async () => {
   try {
-    // await client.connect();
+    await client.connect();
 
-    // await client.db("admin").command({ ping: 1 });
+    await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
@@ -66,7 +52,6 @@ const run = async () => {
       const uid = req.params.uid;
       const query = { uid: uid };
       const result = await userCollection.findOne(query);
-      console.log(result);
       res.send(result);
     });
 
@@ -92,11 +77,26 @@ const run = async () => {
       res.send(result);
     });
 
+    // Dashboard API
+
+    app.get("/overview/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { userEmail: email };
+      const totalNumberOFUsers = await userCollection.estimatedDocumentCount();
+      const totalNumberOFPlants =
+        await plantCollection.estimatedDocumentCount();
+      const numberOfPlantsByUser = await plantCollection.countDocuments(query);
+      res.send([
+        { name: "Total Users", count: totalNumberOFUsers },
+        { name: "Total Plants", count: totalNumberOFPlants },
+        { name: "My Plants", count: numberOfPlantsByUser },
+      ]);
+    });
+
     // Category API
 
     app.post("/category", async (req, res) => {
       const category = req.body;
-      console.log(category);
       result = await categoryCollection.insertOne(category);
       res.send(result);
     });
@@ -126,11 +126,23 @@ const run = async () => {
     app.get("/plants", async (req, res) => {
       const sortBy = req.query.sortBy;
       const order = req.query.order === "descending" ? -1 : 1;
+      const page = parseInt(req.query.page);
+      const plantsPerPage = parseInt(req.query.plantsPerPage);
+      const skip = page * plantsPerPage;
       const sortOption = {};
       sortOption[sortBy] = order;
-      const result = await plantCollection.find().sort(sortOption).toArray();
-      console.log(result);
+      const result = await plantCollection
+        .find()
+        .skip(skip)
+        .limit(plantsPerPage)
+        .sort(sortOption)
+        .toArray();
       res.send(result);
+    });
+
+    app.get("/plantCount", async (req, res) => {
+      const count = await plantCollection.estimatedDocumentCount();
+      res.send({ count });
     });
 
     app.get("/latest", async (req, res) => {
@@ -144,9 +156,7 @@ const run = async () => {
 
     app.get("/plant/:id", async (req, res) => {
       const id = req.params.id;
-      console.log(id);
       const query = { _id: new ObjectId(id) };
-      console.log(query);
       const result = await plantCollection.findOne(query);
       res.send(result);
     });
@@ -181,7 +191,6 @@ const run = async () => {
         );
         res.send(result);
       } catch (error) {
-        console.error("Error updating plant:", error);
         res.status(500).send({ error: "Failed to update plant" });
       }
     });
