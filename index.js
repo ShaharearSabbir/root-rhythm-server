@@ -14,7 +14,6 @@ app.use(
   cors({
     origin: allowedOrigins,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    credentials: true,
   })
 );
 
@@ -30,12 +29,12 @@ const client = new MongoClient(uri, {
 
 const run = async () => {
   try {
-    await client.connect();
+    // await client.connect();
 
-    await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!"
-    );
+    // await client.db("admin").command({ ping: 1 });
+    // console.log(
+    //   "Pinged your deployment. You successfully connected to MongoDB!"
+    // );
 
     const userCollection = client.db("RRDB").collection("users");
     const plantCollection = client.db("RRDB").collection("plants");
@@ -146,7 +145,12 @@ const run = async () => {
     });
 
     app.get("/plantCount", async (req, res) => {
-      const count = await plantCollection.estimatedDocumentCount();
+      const filterBy = req.query.filterBy;
+      const query = {};
+      if (filterBy) {
+        query.category = filterBy;
+      }
+      const count = await plantCollection.countDocuments(query);
       res.send({ count });
     });
 
